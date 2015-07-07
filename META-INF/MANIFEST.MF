@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: selenium-server-standalone-2.44.0.jar jxl.jar
+Main-Class: MonitoringDL
+
