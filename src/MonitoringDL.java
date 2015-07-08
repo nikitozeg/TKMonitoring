@@ -1,4 +1,5 @@
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import jxl.Cell;
@@ -23,7 +24,7 @@ public class MonitoringDL {
     File exlFile = new File("C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\input220volt2.xls");
     Workbook w;
     String insuranceResponse, intercity, kladrFrom, kladrTo, summa, priceFrom, priceTO = "";
-    String insuranceResponseVOZ, intercityVOZ, longitude, latitude, coords, summaVOZ, priceFromVOZ, priceTOVOZ = "";
+    String insuranceResponseVOZ, intercityVOZ, longitude, latitude, coords, summaVOZ, priceFromVOZ, priceTOVOZ, summaVOZAction;
     Double weight, volume, insurance;
     int count;
 
@@ -39,7 +40,7 @@ public class MonitoringDL {
     public void setCoords(String address) throws Exception {
 
         HttpClient httpClient1 = HttpClientBuilder.create().build();
-        HttpGet request1 = new HttpGet("https://geocode-maps.yandex.ru/1.x/?format=json&geocode=" + URI.encodePath("г Москва"));
+        HttpGet request1 = new HttpGet("https://geocode-maps.yandex.ru/1.x/?format=json&geocode=" + URI.encodePath(address));
 
         HttpResponse response1 = httpClient1.execute(request1);
         HttpEntity entity1 = response1.getEntity();
@@ -143,6 +144,13 @@ public class MonitoringDL {
         Label label08 = new Label(8, 0, "Страховка");
         Label label09 = new Label(9, 0, "ИТОГО");
 
+        Label label10 = new Label(11, 0, "Забор");
+        Label label11 = new Label(12, 0, "МТ");
+        Label label12 = new Label(13, 0, "Отвоз");
+        Label label13 = new Label(14, 0, "Страховка");
+        Label label14 = new Label(15, 0, "ИТОГО без скидки");
+        Label label15 = new Label(16, 0, "ИТОГО со скидкой");
+
         writableSheet.addCell(label01);
         writableSheet.addCell(label02);
         writableSheet.addCell(label03);
@@ -153,6 +161,13 @@ public class MonitoringDL {
         writableSheet.addCell(label08);
         writableSheet.addCell(label09);
 
+        writableSheet.addCell(label10);
+        writableSheet.addCell(label11);
+        writableSheet.addCell(label12);
+        writableSheet.addCell(label13);
+        writableSheet.addCell(label14);
+        writableSheet.addCell(label15);
+
         HttpClient httpClient = HttpClientBuilder.create().build();
         JsonParser parser = new JsonParser();
 
@@ -161,7 +176,7 @@ public class MonitoringDL {
             String to = "";
             String from = "";
 
-         /*   BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             System.out.print("Введите количество обрабатываемых строк:");
             try {
                 enteredNumber = Integer.parseInt(br.readLine());
@@ -169,8 +184,8 @@ public class MonitoringDL {
                 System.err.println("Неверный формат");
                 Thread.sleep(3000);
             }
-*/
-            for (int i = 1; i < 2; i++) {
+
+            for (int i = 4; i < enteredNumber; i++) {
                 try {
                     weight = 0.0;
                     volume = 0.0;
@@ -300,20 +315,45 @@ public class MonitoringDL {
 
                     priceTO = mainObject3.get("price").getAsString();
 
+                    Label label0 = new Label(0, i, from);
+                    Label label1 = new Label(1, i, to);
+                    Label label2 = new Label(2, i, weight.toString());
+                    Label label3 = new Label(3, i, volume.toString());
+                    Label label5 = new Label(5, i, priceFrom);
+                    Label label6 = new Label(6, i, intercity);
+                    Label label7 = new Label(7, i, priceTO);
+                    Label label8 = new Label(8, i, insuranceResponse);
+                    Label label9 = new Label(9, i, summa);
+                    writableSheet.addCell(label0);
+                    writableSheet.addCell(label1);
+                    writableSheet.addCell(label2);
+                    writableSheet.addCell(label3);
+                    writableSheet.addCell(label5);
+                    writableSheet.addCell(label6);
+                    writableSheet.addCell(label7);
+                    writableSheet.addCell(label8);
+                    writableSheet.addCell(label9);
 
+
+                    setCoords(from);
+                    String lat1=latitude;
+                    String long1=longitude;
+                    setCoords(to);
+                    String lat2=latitude;
+                    String long2=longitude;
 
                     httpClient = HttpClientBuilder.create().build();
 
                     HttpPost requestVoz = new HttpPost("http://vozovoz.ru/api/v1/orders/price");
-                    StringEntity paramsVoz = new StringEntity("{\"from\":{\"geo\":{\"latitude\":59.936868,\"longitude\":30.31214},\"address\":{\"value\"" +
+                    StringEntity paramsVoz = new StringEntity("{\"from\":{\"geo\":{\"latitude\":"+lat1+",\"longitude\":"+long1+"},\"address\":{\"value\"" +
                             ":\"г. Санкт-Петербург, Невский пр., д 1/4\",\"cityId\":\"61cb4131-1324-11e4-826b-d850e6bbb0fc\"},\"useppv\":false,\"date\":\"2015-07-07T00:00:00.000Z\",\"startTime" +
                             "\":\"1970-01-01T11:00:00.000Z\",\"endTime\":\"1970-01-01T14:00:00.000Z\",\"floor\":0,\"isFloor\":false,\"work\":false,\"lift\":false,\"terminal\":{\"i" +
-                            "d\":\"d01da881-f94a-11e4-80c7-00155d903d03\"}},\"to\":{\"geo\":{\"latitude\":55.756994,\"longitude\":37.614006},\"address\":{\"value\":\"г. Москва, " +
+                            "d\":\"d01da881-f94a-11e4-80c7-00155d903d03\"}},\"to\":{\"geo\":{\"latitude\":"+lat2+",\"longitude\":"+long2+"},\"address\":{\"value\":\"г. Москва, " +
                             "Тверская ул., д 1\",\"cityId\":\"544b4290-11ad-11e4-826a-d850e6bbb0fc\"},\"useppv\":false,\"date\":\"2015-07-08T00:00:00.000Z\",\"startTime\":\"1970-01-01T1" +
                             "4:00:00.000Z\",\"endTime\":\"1970-01-01T17:00:00.000Z\",\"floor\":0,\"isFloor\":false,\"work\":false,\"lift\":false,\"terminal\":{\"id\":\"7d6e3103-cd56-11e4-80c0-00155" +
                             "d903d03\"}},\"cargo\":{\"units\":[{\"length\":0.7,\"width\":0.4,\"height\":0.4,\"weight\":0.9,\"amount\":1,\"volume\":0.11199999999999999}],\"packages\":{\"visible\":false,\"" +
                             "bag1\":0,\"bag2\":0,\"sealPackage\":false,\"safePackage\":false,\"box1\":0,\"box2\":0,\"box3\":0,\"box4\":0,\"hardPackage\":false,\"extraPackage\":false,\"bubbleFilm\":false},\"" +
-                            "correspondence\":false,\"insurance\":false,\"insuranceCost\":0,\"total\":{\"all\":{\"length\":0.7,\"height\":0.4,\"width\":0.4,\"volume\":0.11,\"weight\":0.9,\"amount\":1,\"dens" +
+                            "correspondence\":false,\"insurance\":false,\"insuranceCost\":0,\"total\":{\"all\":{\"length\":0.7,\"height\":0.4,\"width\":0.4,\"volume\":"+volume+",\"weight\":"+weight+",\"amount\":1,\"dens" +
                             "ity\":8.04},\"gab\":{\"length\":0.7,\"height\":0.4,\"width\":0.4,\"volume\":0.11,\"weight\":0.9,\"amount\":1,\"density\":8.04},\"noGab\":{\"length\":0,\"height\":0,\"width\":0,\"v" +
                             "olume\":0,\"weight\":0,\"amount\":0,\"density\":null},\"max\":{\"length\":0.7,\"height\":0.4,\"width\":0.4,\"weight\":0.9}}},\"user\":{\"id\":\"54d9e7be227081aaeb610fec\",\"phoneNum" +
                             "ber\":\"new\",\"phoneApprovedHash\":null,\"type\":\"shipper\",\"shipper\":{\"type\":\"individual\",\"sendCode\":false,\"individual\":{\"fullname\":\"\",\"phoneNumber\":\"\",\"email\":" +
@@ -366,10 +406,32 @@ public class MonitoringDL {
                     System.out.println("RESPONSE: " + ssDL);
                     instreamVoz.close();
 
-                    parser = new JsonParser();//response.toString()
-                    JsonObject vozObj = parser.parse(sbVoz.toString()).getAsJsonObject().getAsJsonObject("data");
-                    summaVOZ = mainObject.get("cost").toString();
+                    JsonParser parserr = new JsonParser();//response.toString()
+                    JsonObject vozObj = parserr.parse(sbVoz.toString()).getAsJsonObject().getAsJsonObject("data");
+                   try {
+                       summaVOZ = vozObj.get("cost").toString();
+                       summaVOZAction = vozObj.get("actionCost").toString();
+                   } catch (Exception e){throw new Exception(e);}
+                    JsonArray pItem = vozObj.getAsJsonArray("price");
 
+                    try {
+                        for (JsonElement user : pItem) {
+                            JsonObject userObject = user.getAsJsonObject();
+                           // if (userObject.get("ID").getAsString().equals("06"))
+                            switch (userObject.get("ID").getAsString())
+                            {
+                                case "01": priceFromVOZ=String.valueOf(userObject.get("Cost")); break;
+                                case "04": priceTOVOZ=String.valueOf(userObject.get("Cost")); break;
+                                case "06": intercityVOZ=String.valueOf(userObject.get("Cost")); break;
+                                case "10": insuranceResponseVOZ=String.valueOf(userObject.get("Cost")); break;
+
+
+                                //return;
+                            }
+                            System.out.println(i);
+                        }
+                    } catch (Exception e) {
+                    }
 
 
 
@@ -377,29 +439,23 @@ public class MonitoringDL {
                     //Запись рез-тов в таблицу ДЛ+VOZ
                     try {
 
-                        Label label0 = new Label(0, i, from);
-                        Label label1 = new Label(1, i, to);
-                        Label label2 = new Label(2, i, weight.toString());
-                        Label label3 = new Label(3, i, volume.toString());
-                        Label label5 = new Label(5, i, priceFrom);
-                        Label label6 = new Label(6, i, intercity);
-                        Label label7 = new Label(7, i, priceTO);
-                        Label label8 = new Label(8, i, insuranceResponse);
-                        Label label9 = new Label(9, i, summa);
 
-                        Label label10 = new Label(11, i, summaVOZ);
 
-                        writableSheet.addCell(label0);
-                        writableSheet.addCell(label1);
-                        writableSheet.addCell(label2);
-                        writableSheet.addCell(label3);
-                        writableSheet.addCell(label5);
-                        writableSheet.addCell(label6);
-                        writableSheet.addCell(label7);
-                        writableSheet.addCell(label8);
-                        writableSheet.addCell(label9);
+                        label10 = new Label(11, i, priceFromVOZ);
+                        label11 = new Label(12, i, intercityVOZ);
+                        label12 = new Label(13, i, priceTOVOZ);
+                        label13 = new Label(14, i, insuranceResponseVOZ);
+                        label14 = new Label(15, i, summaVOZ);
+                        label15 = new Label(16, i, summaVOZAction);
+
+
 
                         writableSheet.addCell(label10);
+                        writableSheet.addCell(label11);
+                        writableSheet.addCell(label12);
+                        writableSheet.addCell(label13);
+                        writableSheet.addCell(label14);
+                        writableSheet.addCell(label15);
 
                         if (count == 10) {
                             System.out.println(i);
@@ -413,9 +469,11 @@ public class MonitoringDL {
 
 
                 } catch (Exception e) {
-                    Label label0 = new Label(0, i, "Моск Обл");
-                    writableSheet.addCell(label0);
                     System.out.print("DoesntRecognized");
+                    e.getMessage();
+                    e.printStackTrace();
+                    e.getStackTrace();
+
                 }
             }
 
