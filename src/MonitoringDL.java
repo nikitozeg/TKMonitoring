@@ -20,8 +20,8 @@ import org.openqa.jetty.util.URI;
 import java.io.*;
 
 public class MonitoringDL {
-    // File exlFile = new File("input.xls");
-    File exlFile = new File("C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\input220volt2.xls");
+     File exlFile = new File("input.xls");
+    //File exlFile = new File("C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\input220volt2.xls");
     Workbook w;
     String insuranceResponse, intercity, kladrFrom, kladrTo, summa, priceFrom, priceTO = "";
     String insuranceResponseVOZ, intercityVOZ, longitude, latitude, coords, summaVOZ, priceFromVOZ, priceTOVOZ, summaVOZAction;
@@ -66,7 +66,7 @@ public class MonitoringDL {
         }
         String ss1 = sb1.toString();
         // now you have the string representation of the HTML request
-        System.out.println("RESPONSE: " + sb1);
+     //   System.out.println("RESPONSE: " + sb1);
 
         JsonParser parser = new JsonParser();//response.toString()
         JsonObject mainObject = parser.parse(sb1.toString()).getAsJsonObject().getAsJsonObject("response");
@@ -75,9 +75,6 @@ public class MonitoringDL {
         longitude = coords.substring(0, coords.indexOf(" "));
     }
 
-    private void getPriceVozovoz(String address) throws Exception {
-
-    }
 
     private String getKladr(String address) throws Exception {
         String kladr = "";
@@ -127,8 +124,8 @@ public class MonitoringDL {
 
 
     public void sendGet() throws Exception {
-        //   File crowlerResult = new File("output.xls");
-        File crowlerResult = new File("C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\output.xls");
+           File crowlerResult = new File("output.xls");
+        //File crowlerResult = new File("C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\output.xls");
         w = Workbook.getWorkbook(exlFile);
         Sheet sheet = w.getSheet(0);
         WritableWorkbook writableWorkbook = Workbook.createWorkbook(crowlerResult);
@@ -185,7 +182,7 @@ public class MonitoringDL {
                 Thread.sleep(3000);
             }
 
-            for (int i = 4; i < enteredNumber; i++) {
+            for (int i = 1; i < enteredNumber; i++) {
                 try {
                     weight = 0.0;
                     volume = 0.0;
