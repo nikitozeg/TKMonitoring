@@ -5,7 +5,6 @@ import com.google.gson.JsonParser;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
-import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import org.apache.http.HttpEntity;
@@ -17,25 +16,36 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.openqa.jetty.util.URI;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 
-public class MonitoringDL {
-     File exlFile = new File("input.xls");
-    //File exlFile = new File("C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\input220volt2.xls");
+import static javax.swing.JFrame.EXIT_ON_CLOSE;
+
+public class MonitoringDL extends JPanel implements ActionListener {
+    static private final String newline = "\n";
+    JButton openButton;
+    JTextArea log, input;
+    JFileChooser fc;
+
     Workbook w;
-    String insuranceResponse, intercity, kladrFrom, kladrTo, summa, priceFrom, priceTO = "";
+    Double insuranceResponse;
+    Double intercity;
+    String kladrFrom;
+    String kladrTo;
+    Double summa;
+    Double priceFrom;
+    Double priceTO;
+    String terminalFrom;
+    String terminalTO;
     String insuranceResponseVOZ, intercityVOZ, longitude, latitude, coords, summaVOZ, priceFromVOZ, priceTOVOZ, summaVOZAction;
     Double weight, volume, insurance;
     int count;
-
-
-    public static void main(String[] args) throws Exception {
-        MonitoringDL http = new MonitoringDL();
-        System.out.println("Testing 1 - Send Http GET request");
-        http.sendGet();
-
-    }
-
+    int enteredNumber = 0;
+    JProgressBar progressBar;
+    String path;
 
     public void setCoords(String address) throws Exception {
 
@@ -66,7 +76,7 @@ public class MonitoringDL {
         }
         String ss1 = sb1.toString();
         // now you have the string representation of the HTML request
-     //   System.out.println("RESPONSE: " + sb1);
+        //   System.out.println("RESPONSE: " + sb1);
 
         JsonParser parser = new JsonParser();//response.toString()
         JsonObject mainObject = parser.parse(sb1.toString()).getAsJsonObject().getAsJsonObject("response");
@@ -74,7 +84,6 @@ public class MonitoringDL {
         latitude = coords.substring(coords.indexOf(" ") + 1, coords.length());
         longitude = coords.substring(0, coords.indexOf(" "));
     }
-
 
     private String getKladr(String address) throws Exception {
         String kladr = "";
@@ -122,31 +131,36 @@ public class MonitoringDL {
 
     }
 
-
     public void sendGet() throws Exception {
-           File crowlerResult = new File("output.xls");
-        //File crowlerResult = new File("C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\output.xls");
+       // File crowlerResult = new File("output.xls");
+          File crowlerResult = new File("C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\output.xls");
+        File exlFile = new File(path);
         w = Workbook.getWorkbook(exlFile);
         Sheet sheet = w.getSheet(0);
         WritableWorkbook writableWorkbook = Workbook.createWorkbook(crowlerResult);
         WritableSheet writableSheet = writableWorkbook.createSheet("Sheet2", 0);
 
-        Label label01 = new Label(0, 0, "От");
-        Label label02 = new Label(1, 0, "До");
-        Label label03 = new Label(2, 0, "Вес");
-        Label label04 = new Label(3, 0, "Объем");
-        Label label05 = new Label(5, 0, "Забор");
-        Label label06 = new Label(6, 0, "МТ");
-        Label label07 = new Label(7, 0, "Отвоз");
-        Label label08 = new Label(8, 0, "Страховка");
-        Label label09 = new Label(9, 0, "ИТОГО");
+        jxl.write.Label label01 = new jxl.write.Label(0, 0, "От");
+        jxl.write.Label label02 = new jxl.write.Label(1, 0, "До");
+        jxl.write.Label label03 = new jxl.write.Label(2, 0, "Вес");
+        jxl.write.Label label04 = new jxl.write.Label(3, 0, "Объем");
 
-        Label label10 = new Label(11, 0, "Забор");
-        Label label11 = new Label(12, 0, "МТ");
-        Label label12 = new Label(13, 0, "Отвоз");
-        Label label13 = new Label(14, 0, "Страховка");
-        Label label14 = new Label(15, 0, "ИТОГО без скидки");
-        Label label15 = new Label(16, 0, "ИТОГО со скидкой");
+        //ДЛ
+        jxl.write.Label label05 = new jxl.write.Label(5, 0, "Забор");
+        jxl.write.Label label06 = new jxl.write.Label(6, 0, "МТ");
+        jxl.write.Label label07 = new jxl.write.Label(7, 0, "Отвоз");
+        jxl.write.Label label08 = new jxl.write.Label(8, 0, "Страховка");
+        jxl.write.Label label09 = new jxl.write.Label(9, 0, "ИТОГО");
+        jxl.write.Label label010= new jxl.write.Label(10, 0, "Т.отправителя");
+        jxl.write.Label label011 = new jxl.write.Label(11, 0, "Т.получателя");
+
+        //ВОЗОВОЗ
+        jxl.write.Label label13 = new jxl.write.Label(13, 0, "Забор");
+        jxl.write.Label label14 = new jxl.write.Label(14, 0, "МТ");
+        jxl.write.Label label15 = new jxl.write.Label(15, 0, "Отвоз");
+        jxl.write.Label label16 = new jxl.write.Label(16, 0, "Страховка");
+        jxl.write.Label label17 = new jxl.write.Label(17, 0, "ИТОГО без скидки");
+        jxl.write.Label label18 = new jxl.write.Label(18, 0, "ИТОГО со скидкой");
 
         writableSheet.addCell(label01);
         writableSheet.addCell(label02);
@@ -157,23 +171,24 @@ public class MonitoringDL {
         writableSheet.addCell(label07);
         writableSheet.addCell(label08);
         writableSheet.addCell(label09);
-
-        writableSheet.addCell(label10);
-        writableSheet.addCell(label11);
-        writableSheet.addCell(label12);
+        writableSheet.addCell(label010);
+        writableSheet.addCell(label011);
         writableSheet.addCell(label13);
         writableSheet.addCell(label14);
         writableSheet.addCell(label15);
+        writableSheet.addCell(label16);
+        writableSheet.addCell(label17);
+        writableSheet.addCell(label18);
 
         HttpClient httpClient = HttpClientBuilder.create().build();
         JsonParser parser = new JsonParser();
 
         try {
-            int enteredNumber = 0;
+
             String to = "";
             String from = "";
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+           /* BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             System.out.print("Введите количество обрабатываемых строк:");
             try {
                 enteredNumber = Integer.parseInt(br.readLine());
@@ -181,14 +196,15 @@ public class MonitoringDL {
                 System.err.println("Неверный формат");
                 Thread.sleep(3000);
             }
-
+*/
             for (int i = 1; i < enteredNumber; i++) {
+                progressBar.setValue(i);
                 try {
                     weight = 0.0;
                     volume = 0.0;
                     insurance = 0.0;
-                    insuranceResponse = "";
-                    intercity = "";
+                    insuranceResponse = 0.0;
+                    intercity = 0.0;
                     kladrFrom = "";
                     kladrTo = "";
                     longitude="";
@@ -242,31 +258,40 @@ public class MonitoringDL {
 
                     HttpPost request = new HttpPost("https://api.dellin.ru/v1/public/calculator.json");
                     StringEntity params = new StringEntity("{\"appKey\":\"8E6F26C2-043D-11E5-8F8A-00505683A6D3\",    \"derivalPoint\":\"" + kladrFrom + "\",\"derivalDoor\":true,\"arrivalPoint\":\"" + kladrTo + "\"," +
-                            "\"arrivalDoor\":true,\"sizedVolume\":\"" + volume + "\",\"sizedWeight\":\"" + weight + "\",\"statedValue\":\"" + insurance + "\"}");
+                            "\"arrivalDoor\":true,\"sizedVolume\":\"" + volume + "\",\"sizedWeight\":\"" + weight + "\",\"statedValue\":\"" + insurance + "\"}", "UTF-8");
 
-//                String inputLine ;
-//                BufferedReader br = new BufferedReader(new InputStreamReader(params.getContent()));
-//                try {
-//                    while ((inputLine = br.readLine()) != null) {
-//                        System.out.println(inputLine);
-//                    }
-//                    br.close();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
+                  /*  HttpParams httpParameters = new BasicHttpParams();
+                    int timeoutConnection = 4000;
+                    HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);*/
 
+            /*    String inputLine ;
+                BufferedReader br = new BufferedReader(new InputStreamReader(params.getContent()));
+                try {
+                    while ((inputLine = br.readLine()) != null) {
+                        System.out.println(inputLine);
+                    }
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-                    request.addHeader("content-type", "application/javascript");
+*/
+                    request.addHeader("content-type", "application/json; charset=utf-8");
+                    //request.addHeader("Accept-Language","ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4");
                     request.setEntity(params);
 
                     HttpResponse response = httpClient.execute(request);
                     //   System.out.println(response);
+                    //response.setHeader("Accept-Language", "ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4");
+
 
                     HttpEntity entity = response.getEntity();
+                   // EntityUtils.toString(sb, "UTF-8");
                     InputStream instream = entity.getContent();
 
                     BufferedReader reader = new BufferedReader(new InputStreamReader(instream));
                     StringBuilder sb = new StringBuilder();
+
 
                     String line = null;
                     try {
@@ -283,44 +308,49 @@ public class MonitoringDL {
                         }
                     }
                     String ss = sb.toString();
-                    // System.out.println("RESPONSE: " + ss);
+
+                     System.out.println("RESPONSE: " + sb);
                     instream.close();
 
                     // Thread.sleep(90000);
 
                     JsonObject mainObject = parser.parse(ss).getAsJsonObject();
-                    summa = mainObject.getAsJsonPrimitive("price").getAsString();
+                    summa = mainObject.getAsJsonPrimitive("price").getAsDouble();
 
                     JsonObject mainObject2 = parser.parse(ss).getAsJsonObject().getAsJsonObject("derival");
-                    priceFrom = mainObject2.getAsJsonPrimitive("price").getAsString();
+                    priceFrom = mainObject2.getAsJsonPrimitive("price").getAsDouble();
+                    terminalFrom=mainObject2.getAsJsonPrimitive("terminal").getAsString();
 
                     try {
                         JsonObject mainObject8 = parser.parse(ss).getAsJsonObject().getAsJsonObject("intercity");
-                        intercity = mainObject8.getAsJsonPrimitive("price").getAsString();
+                        intercity = mainObject8.getAsJsonPrimitive("price").getAsDouble();
                     } catch (Exception e) {
-                        intercity = "-";
+                        intercity = 0.0;
                     }
 
                     try {
                         JsonObject mainObject9 = parser.parse(ss).getAsJsonObject();
-                        insuranceResponse = mainObject9.getAsJsonPrimitive("insurance").getAsString();
+                        insuranceResponse = mainObject9.getAsJsonPrimitive("insurance").getAsDouble();
                     } catch (Exception e) {
-                        insuranceResponse = "-";
+                        insuranceResponse = 0.0;
                     }
 
                     JsonObject mainObject3 = parser.parse(ss).getAsJsonObject().getAsJsonObject("arrival");
+                    terminalTO=mainObject2.getAsJsonPrimitive("terminal").getAsString();
 
-                    priceTO = mainObject3.get("price").getAsString();
+                    priceTO = mainObject3.get("price").getAsDouble();
 
-                    Label label0 = new Label(0, i, from);
-                    Label label1 = new Label(1, i, to);
-                    Label label2 = new Label(2, i, weight.toString());
-                    Label label3 = new Label(3, i, volume.toString());
-                    Label label5 = new Label(5, i, priceFrom);
-                    Label label6 = new Label(6, i, intercity);
-                    Label label7 = new Label(7, i, priceTO);
-                    Label label8 = new Label(8, i, insuranceResponse);
-                    Label label9 = new Label(9, i, summa);
+                    jxl.write.Label label0 = new jxl.write.Label(0, i, from);
+                    jxl.write.Label label1 = new jxl.write.Label(1, i, to);
+                    jxl.write.Number label2 = new jxl.write.Number(2, i, weight);
+                    jxl.write.Number label3 = new jxl.write.Number(3, i, volume);
+                    jxl.write.Number label5 = new jxl.write.Number(5, i, priceFrom);
+                    jxl.write.Number label6 = new jxl.write.Number(6, i, intercity);
+                    jxl.write.Number label7 = new jxl.write.Number(7, i, priceTO);
+                    jxl.write.Number label8 = new jxl.write.Number(8, i, insuranceResponse);
+                    jxl.write.Number label9 = new jxl.write.Number(9, i, summa);
+                    jxl.write.Label label10 = new jxl.write.Label(10, i, terminalFrom);
+                    jxl.write.Label label11 = new jxl.write.Label(11, i, terminalTO);
                     writableSheet.addCell(label0);
                     writableSheet.addCell(label1);
                     writableSheet.addCell(label2);
@@ -330,6 +360,8 @@ public class MonitoringDL {
                     writableSheet.addCell(label7);
                     writableSheet.addCell(label8);
                     writableSheet.addCell(label9);
+                    writableSheet.addCell(label10);
+                    writableSheet.addCell(label11);
 
 
                     setCoords(from);
@@ -398,23 +430,22 @@ public class MonitoringDL {
                             e.printStackTrace();
                         }
                     }
-                    String ssDL = sbVoz.toString();
                     // now you have the string representation of the HTML requestVoz
-                    System.out.println("RESPONSE: " + ssDL);
+                 //   System.out.println("RESPONSE Vozovoz: " + sbVoz);
                     instreamVoz.close();
 
                     JsonParser parserr = new JsonParser();//response.toString()
                     JsonObject vozObj = parserr.parse(sbVoz.toString()).getAsJsonObject().getAsJsonObject("data");
-                   try {
-                       summaVOZ = vozObj.get("cost").toString();
-                       summaVOZAction = vozObj.get("actionCost").toString();
-                   } catch (Exception e){throw new Exception(e);}
+                    try {
+                        summaVOZ = vozObj.get("cost").toString();
+                        summaVOZAction = vozObj.get("actionCost").toString();
+                    } catch (Exception e){throw new Exception(e);}
                     JsonArray pItem = vozObj.getAsJsonArray("price");
 
                     try {
                         for (JsonElement user : pItem) {
                             JsonObject userObject = user.getAsJsonObject();
-                           // if (userObject.get("ID").getAsString().equals("06"))
+                            // if (userObject.get("ID").getAsString().equals("06"))
                             switch (userObject.get("ID").getAsString())
                             {
                                 case "01": priceFromVOZ=String.valueOf(userObject.get("Cost")); break;
@@ -436,23 +467,21 @@ public class MonitoringDL {
                     //Запись рез-тов в таблицу ДЛ+VOZ
                     try {
 
-
-
-                        label10 = new Label(11, i, priceFromVOZ);
-                        label11 = new Label(12, i, intercityVOZ);
-                        label12 = new Label(13, i, priceTOVOZ);
-                        label13 = new Label(14, i, insuranceResponseVOZ);
-                        label14 = new Label(15, i, summaVOZ);
-                        label15 = new Label(16, i, summaVOZAction);
+                        label13 = new jxl.write.Label(13, i, priceFromVOZ);
+                        label14 = new jxl.write.Label(14, i, intercityVOZ);
+                        label15 = new jxl.write.Label(15, i, priceTOVOZ);
+                        label16 = new jxl.write.Label(16, i, insuranceResponseVOZ);
+                        label17 = new jxl.write.Label(17, i, summaVOZ);
+                        label18 = new jxl.write.Label(18, i, summaVOZAction);
 
 
 
-                        writableSheet.addCell(label10);
-                        writableSheet.addCell(label11);
-                        writableSheet.addCell(label12);
                         writableSheet.addCell(label13);
                         writableSheet.addCell(label14);
                         writableSheet.addCell(label15);
+                        writableSheet.addCell(label16);
+                        writableSheet.addCell(label17);
+                        writableSheet.addCell(label18);
 
                         if (count == 10) {
                             System.out.println(i);
@@ -484,4 +513,106 @@ public class MonitoringDL {
 
     }
 
+    public MonitoringDL() {
+        super(new BorderLayout());
+
+        //Create the log first, because the action listeners
+        //need to refer to it.
+        input = new JTextArea(1,7);
+        progressBar = new JProgressBar();
+        progressBar.setStringPainted(true);
+        progressBar.setMinimum(0);
+
+
+
+
+        log = new JTextArea(5,20);
+        log.setMargin(new Insets(15,15,15,15));
+        log.setEditable(false);
+        JScrollPane logScrollPane = new JScrollPane(log);
+
+        //Create a file chooser
+        fc = new JFileChooser();
+
+        //Create the open button.  We use the image from the JLF
+        //Graphics Repository (but we extracted it from the jar).
+        openButton = new JButton("Open a File...");
+        openButton.addActionListener(this);
+        //progressBar.addChangeListener();
+        //Create the save button.  We use the image from the JLF
+        //Graphics Repository (but we extracted it from the jar).
+        //saveButton = new JButton("Save a File...");
+        //saveButton.addActionListener(this);
+
+        //For layout purposes, put the buttons in a separate panel
+        JPanel buttonPanel = new JPanel(); //use FlowLayout
+        buttonPanel.add(openButton);
+        buttonPanel.add(input, BorderLayout.NORTH);
+        buttonPanel.add(progressBar, BorderLayout.SOUTH);
+        //buttonPanel.add(saveButton);
+
+        //Add the buttons and the log to this panel.
+        add(buttonPanel, BorderLayout.PAGE_START);
+        add(logScrollPane, BorderLayout.CENTER);
+        progressBar.setMaximum(enteredNumber);
+        log.append("Введите количество строк в поле ввода, а затем выберите исходный файл");
+    }
+
+    public void actionPerformed(ActionEvent e) {
+
+        log.append("Пожалуйста, подождите некоторое время..");
+        int returnVal = fc.showOpenDialog(MonitoringDL.this);
+
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            path= file.getAbsolutePath();
+            enteredNumber=Integer.parseInt(input.getText());
+
+            try {
+                sendGet();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+
+
+            log.append("Готово. Откройте файл output.xls  " + file.getName() + "." + newline);
+        } else {
+
+        }
+        log.setCaretPosition(log.getDocument().getLength());
+
+    }
+
+    private static void createAndShowGUI() {
+
+        //Create and set up the window.
+        JFrame frame = new JFrame("FileChooserDemo");
+        frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        //Add content to the window.
+        frame.add(new MonitoringDL());
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+        frame.setLocation(x, y);
+        //Display the window.
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+
+
+
+    public static void main(String[] args) {
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                //Turn off metal's use of bold fonts
+                UIManager.put("swing.boldMetal", Boolean.FALSE);
+                createAndShowGUI();
+
+            }
+
+        });
+    }
 }
