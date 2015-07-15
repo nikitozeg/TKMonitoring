@@ -18,13 +18,11 @@ import org.openqa.jetty.util.URI;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 
-public class MonitoringDL extends JPanel implements ActionListener {
+public class MonitoringDL extends JPanel {
     static private final String newline = "\n";
     JButton openButton;
     JTextArea log, input;
@@ -41,6 +39,7 @@ public class MonitoringDL extends JPanel implements ActionListener {
     String terminalFrom;
     String terminalTO;
     String insuranceResponseVOZ, intercityVOZ, longitude, latitude, coords, summaVOZ, priceFromVOZ, priceTOVOZ, summaVOZAction;
+    String addressLine;
     Double weight, volume, insurance;
     int count;
     int enteredNumber = 0;
@@ -50,12 +49,12 @@ public class MonitoringDL extends JPanel implements ActionListener {
     public void setCoords(String address) throws Exception {
 
         HttpClient httpClient1 = HttpClientBuilder.create().build();
-        HttpGet request1 = new HttpGet("https://geocode-maps.yandex.ru/1.x/?format=json&geocode=" + URI.encodePath(address));
+        HttpGet request1 = new HttpGet("https://geocode-maps.yandex.ru/1.x/?results=1&format=json&geocode=" + URI.encodePath(address));
 
         HttpResponse response1 = httpClient1.execute(request1);
         HttpEntity entity1 = response1.getEntity();
         InputStream instream1 = entity1.getContent();
-        BufferedReader reader1 = new BufferedReader(new InputStreamReader(instream1));
+        BufferedReader reader1 = new BufferedReader(new InputStreamReader(instream1,"UTF-8"));
 
 
         StringBuilder sb1 = new StringBuilder();
@@ -80,16 +79,19 @@ public class MonitoringDL extends JPanel implements ActionListener {
 
         JsonParser parser = new JsonParser();//response.toString()
         JsonObject mainObject = parser.parse(sb1.toString()).getAsJsonObject().getAsJsonObject("response");
+        addressLine=mainObject.getAsJsonObject("GeoObjectCollection").getAsJsonArray("featureMember").get(0).getAsJsonObject().getAsJsonObject("GeoObject").getAsJsonObject("metaDataProperty")
+                    .getAsJsonObject("GeocoderMetaData").getAsJsonObject("AddressDetails").getAsJsonObject("Country").get("AddressLine").getAsString();
         coords = mainObject.getAsJsonObject("GeoObjectCollection").getAsJsonArray("featureMember").get(0).getAsJsonObject().getAsJsonObject("GeoObject").getAsJsonObject("Point").get("pos").getAsString();
         latitude = coords.substring(coords.indexOf(" ") + 1, coords.length());
         longitude = coords.substring(0, coords.indexOf(" "));
     }
 
-    private String getKladr(String address) throws Exception {
+    private String getKladrAndSetCoords(String address) throws Exception {
+        setCoords(address);
         String kladr = "";
         HttpClient httpClient1 = HttpClientBuilder.create().build();
         HttpPost request1 = new HttpPost("https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address");
-        StringEntity params1 = new StringEntity("{\"count\":1,\"query\":\"" + address + "\"}", "utf-8");
+        StringEntity params1 = new StringEntity("{\"count\":1,\"query\":\"" + addressLine + "\"}", "utf-8");
         request1.addHeader("content-type", "application/json");
         request1.addHeader("Authorization", "Token 84beb76a98914195f374779f2f313d31efca3c5d");
         request1.addHeader("X-Secret", "cb82deee2d367b967ba569b5fc11b9e21a8c4832");
@@ -134,6 +136,7 @@ public class MonitoringDL extends JPanel implements ActionListener {
     public void sendGet() throws Exception {
        // File crowlerResult = new File("output.xls");
           File crowlerResult = new File("C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\output.xls");
+        path="C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\inpu.xls";
         File exlFile = new File(path);
         w = Workbook.getWorkbook(exlFile);
         Sheet sheet = w.getSheet(0);
@@ -197,9 +200,10 @@ public class MonitoringDL extends JPanel implements ActionListener {
                 Thread.sleep(3000);
             }
 */
-            for (int i = 1; i < enteredNumber; i++) {
+            for (int i = 1; i < 10; i++) {
                 progressBar.setValue(i);
                 try {
+                    addressLine="";
                     weight = 0.0;
                     volume = 0.0;
                     insurance = 0.0;
@@ -221,13 +225,21 @@ public class MonitoringDL extends JPanel implements ActionListener {
                     from = cell.getContents();
 
                     System.out.println(from);
-                    System.out.print(getKladr(from));
-                    kladrFrom = getKladr(from) + "000000000000";
+                    System.out.print(getKladrAndSetCoords(from));
+                    kladrFrom = getKladrAndSetCoords(from) + "000000000000";
+
+                    //   setCoords(from);
+                    String lat1=latitude;
+                    String long1=longitude;
 
 
                     cell = sheet.getCell(2, i);
                     to = cell.getContents();
-                    kladrTo = getKladr(to) + "000000000000";
+                    kladrTo = getKladrAndSetCoords(to) + "000000000000";
+
+                    //    setCoords(to);
+                    String lat2=latitude;
+                    String long2=longitude;
 
                     //     System.out.print(getKladr(to));
                     //  Thread.sleep(10000);
@@ -289,7 +301,7 @@ public class MonitoringDL extends JPanel implements ActionListener {
                    // EntityUtils.toString(sb, "UTF-8");
                     InputStream instream = entity.getContent();
 
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(instream));
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(instream, "UTF-8"));
                     StringBuilder sb = new StringBuilder();
 
 
@@ -364,12 +376,6 @@ public class MonitoringDL extends JPanel implements ActionListener {
                     writableSheet.addCell(label11);
 
 
-                    setCoords(from);
-                    String lat1=latitude;
-                    String long1=longitude;
-                    setCoords(to);
-                    String lat2=latitude;
-                    String long2=longitude;
 
                     httpClient = HttpClientBuilder.create().build();
 
@@ -537,7 +543,7 @@ public class MonitoringDL extends JPanel implements ActionListener {
         //Create the open button.  We use the image from the JLF
         //Graphics Repository (but we extracted it from the jar).
         openButton = new JButton("Open a File...");
-        openButton.addActionListener(this);
+ //       openButton.addActionListener(this);
         //progressBar.addChangeListener();
         //Create the save button.  We use the image from the JLF
         //Graphics Repository (but we extracted it from the jar).
@@ -558,7 +564,7 @@ public class MonitoringDL extends JPanel implements ActionListener {
         log.append("Введите количество строк в поле ввода, а затем выберите исходный файл");
     }
 
-    public void actionPerformed(ActionEvent e) {
+   /* public void actionPerformed(ActionEvent e) {
 
         log.append("Пожалуйста, подождите некоторое время..");
         int returnVal = fc.showOpenDialog(MonitoringDL.this);
@@ -581,7 +587,7 @@ public class MonitoringDL extends JPanel implements ActionListener {
         }
         log.setCaretPosition(log.getDocument().getLength());
 
-    }
+    }*/
 
     private static void createAndShowGUI() {
 
@@ -603,16 +609,20 @@ public class MonitoringDL extends JPanel implements ActionListener {
 
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        MonitoringDL s= new MonitoringDL();
+        s.sendGet();
 
-        SwingUtilities.invokeLater(new Runnable() {
+      /*  SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //Turn off metal's use of bold fonts
                 UIManager.put("swing.boldMetal", Boolean.FALSE);
-                createAndShowGUI();
+
+              //  createAndShowGUI();
 
             }
 
-        });
+        }
+        );*/
     }
 }
