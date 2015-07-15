@@ -36,8 +36,8 @@ public class MonitoringDL extends JPanel {
     Double summa;
     Double priceFrom;
     Double priceTO;
-    String terminalFrom;
-    String terminalTO;
+    String recognizedFrom;
+    String recognizedTo;
     String insuranceResponseVOZ, intercityVOZ, longitude, latitude, coords, summaVOZ, priceFromVOZ, priceTOVOZ, summaVOZAction;
     String addressLine;
     Double weight, volume, insurance;
@@ -54,7 +54,7 @@ public class MonitoringDL extends JPanel {
         HttpResponse response1 = httpClient1.execute(request1);
         HttpEntity entity1 = response1.getEntity();
         InputStream instream1 = entity1.getContent();
-        BufferedReader reader1 = new BufferedReader(new InputStreamReader(instream1,"UTF-8"));
+        BufferedReader reader1 = new BufferedReader(new InputStreamReader(instream1, "UTF-8"));
 
 
         StringBuilder sb1 = new StringBuilder();
@@ -79,11 +79,12 @@ public class MonitoringDL extends JPanel {
 
         JsonParser parser = new JsonParser();//response.toString()
         JsonObject mainObject = parser.parse(sb1.toString()).getAsJsonObject().getAsJsonObject("response");
-        addressLine=mainObject.getAsJsonObject("GeoObjectCollection").getAsJsonArray("featureMember").get(0).getAsJsonObject().getAsJsonObject("GeoObject").getAsJsonObject("metaDataProperty")
-                    .getAsJsonObject("GeocoderMetaData").getAsJsonObject("AddressDetails").getAsJsonObject("Country").get("AddressLine").getAsString();
+        addressLine = mainObject.getAsJsonObject("GeoObjectCollection").getAsJsonArray("featureMember").get(0).getAsJsonObject().getAsJsonObject("GeoObject").getAsJsonObject("metaDataProperty")
+                .getAsJsonObject("GeocoderMetaData").getAsJsonObject("AddressDetails").getAsJsonObject("Country").get("AddressLine").getAsString();
         coords = mainObject.getAsJsonObject("GeoObjectCollection").getAsJsonArray("featureMember").get(0).getAsJsonObject().getAsJsonObject("GeoObject").getAsJsonObject("Point").get("pos").getAsString();
         latitude = coords.substring(coords.indexOf(" ") + 1, coords.length());
         longitude = coords.substring(0, coords.indexOf(" "));
+
     }
 
     private String getKladrAndSetCoords(String address) throws Exception {
@@ -134,9 +135,9 @@ public class MonitoringDL extends JPanel {
     }
 
     public void sendGet() throws Exception {
-       // File crowlerResult = new File("output.xls");
-          File crowlerResult = new File("C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\output.xls");
-        path="C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\inpu.xls";
+        // File crowlerResult = new File("output.xls");
+        File crowlerResult = new File("C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\output.xls");
+        path = "C:\\Users\\n.ivanov\\Dropbox\\AutoMonitoringDL\\inpu.xls";
         File exlFile = new File(path);
         w = Workbook.getWorkbook(exlFile);
         Sheet sheet = w.getSheet(0);
@@ -154,8 +155,8 @@ public class MonitoringDL extends JPanel {
         jxl.write.Label label07 = new jxl.write.Label(7, 0, "Отвоз");
         jxl.write.Label label08 = new jxl.write.Label(8, 0, "Страховка");
         jxl.write.Label label09 = new jxl.write.Label(9, 0, "ИТОГО");
-        jxl.write.Label label010= new jxl.write.Label(10, 0, "Т.отправителя");
-        jxl.write.Label label011 = new jxl.write.Label(11, 0, "Т.получателя");
+        jxl.write.Label label010 = new jxl.write.Label(10, 0, "Отправитель");
+        jxl.write.Label label011 = new jxl.write.Label(11, 0, "Получатель");
 
         //ВОЗОВОЗ
         jxl.write.Label label13 = new jxl.write.Label(13, 0, "Забор");
@@ -200,10 +201,10 @@ public class MonitoringDL extends JPanel {
                 Thread.sleep(3000);
             }
 */
-            for (int i = 1; i < 10; i++) {
+            for (int i = 1; i < 20; i++) {
                 progressBar.setValue(i);
                 try {
-                    addressLine="";
+                    addressLine = "";
                     weight = 0.0;
                     volume = 0.0;
                     insurance = 0.0;
@@ -211,13 +212,13 @@ public class MonitoringDL extends JPanel {
                     intercity = 0.0;
                     kladrFrom = "";
                     kladrTo = "";
-                    longitude="";
-                    latitude="";
-                    coords="";
-                    insuranceResponseVOZ="";
-                    intercityVOZ="";
-                    summaVOZ="";
-                    priceFromVOZ="";
+                    longitude = "";
+                    latitude = "";
+                    coords = "";
+                    insuranceResponseVOZ = "";
+                    intercityVOZ = "";
+                    summaVOZ = "";
+                    priceFromVOZ = "";
                     priceTOVOZ = "";
 
                     System.out.println(i);
@@ -227,19 +228,19 @@ public class MonitoringDL extends JPanel {
                     System.out.println(from);
                     System.out.print(getKladrAndSetCoords(from));
                     kladrFrom = getKladrAndSetCoords(from) + "000000000000";
-
+                    recognizedFrom = addressLine;
                     //   setCoords(from);
-                    String lat1=latitude;
-                    String long1=longitude;
+                    String lat1 = latitude;
+                    String long1 = longitude;
 
 
                     cell = sheet.getCell(2, i);
                     to = cell.getContents();
                     kladrTo = getKladrAndSetCoords(to) + "000000000000";
-
+                    recognizedTo = addressLine;
                     //    setCoords(to);
-                    String lat2=latitude;
-                    String long2=longitude;
+                    String lat2 = latitude;
+                    String long2 = longitude;
 
                     //     System.out.print(getKladr(to));
                     //  Thread.sleep(10000);
@@ -298,7 +299,7 @@ public class MonitoringDL extends JPanel {
 
 
                     HttpEntity entity = response.getEntity();
-                   // EntityUtils.toString(sb, "UTF-8");
+                    // EntityUtils.toString(sb, "UTF-8");
                     InputStream instream = entity.getContent();
 
                     BufferedReader reader = new BufferedReader(new InputStreamReader(instream, "UTF-8"));
@@ -321,7 +322,7 @@ public class MonitoringDL extends JPanel {
                     }
                     String ss = sb.toString();
 
-                     System.out.println("RESPONSE: " + sb);
+                    System.out.println("RESPONSE: " + sb);
                     instream.close();
 
                     // Thread.sleep(90000);
@@ -331,7 +332,7 @@ public class MonitoringDL extends JPanel {
 
                     JsonObject mainObject2 = parser.parse(ss).getAsJsonObject().getAsJsonObject("derival");
                     priceFrom = mainObject2.getAsJsonPrimitive("price").getAsDouble();
-                    terminalFrom=mainObject2.getAsJsonPrimitive("terminal").getAsString();
+                    //  recognizedFrom=mainObject2.getAsJsonPrimitive("terminal").getAsString();
 
                     try {
                         JsonObject mainObject8 = parser.parse(ss).getAsJsonObject().getAsJsonObject("intercity");
@@ -348,7 +349,7 @@ public class MonitoringDL extends JPanel {
                     }
 
                     JsonObject mainObject3 = parser.parse(ss).getAsJsonObject().getAsJsonObject("arrival");
-                    terminalTO=mainObject2.getAsJsonPrimitive("terminal").getAsString();
+                    //  recognizedTo=mainObject2.getAsJsonPrimitive("terminal").getAsString();
 
                     priceTO = mainObject3.get("price").getAsDouble();
 
@@ -361,8 +362,8 @@ public class MonitoringDL extends JPanel {
                     jxl.write.Number label7 = new jxl.write.Number(7, i, priceTO);
                     jxl.write.Number label8 = new jxl.write.Number(8, i, insuranceResponse);
                     jxl.write.Number label9 = new jxl.write.Number(9, i, summa);
-                    jxl.write.Label label10 = new jxl.write.Label(10, i, terminalFrom);
-                    jxl.write.Label label11 = new jxl.write.Label(11, i, terminalTO);
+                    jxl.write.Label label10 = new jxl.write.Label(10, i, recognizedFrom);
+                    jxl.write.Label label11 = new jxl.write.Label(11, i, recognizedTo);
                     writableSheet.addCell(label0);
                     writableSheet.addCell(label1);
                     writableSheet.addCell(label2);
@@ -376,19 +377,18 @@ public class MonitoringDL extends JPanel {
                     writableSheet.addCell(label11);
 
 
-
                     httpClient = HttpClientBuilder.create().build();
 
                     HttpPost requestVoz = new HttpPost("http://vozovoz.ru/api/v1/orders/price");
-                    StringEntity paramsVoz = new StringEntity("{\"from\":{\"geo\":{\"latitude\":"+lat1+",\"longitude\":"+long1+"},\"address\":{\"value\"" +
+                    StringEntity paramsVoz = new StringEntity("{\"from\":{\"geo\":{\"latitude\":" + lat1 + ",\"longitude\":" + long1 + "},\"address\":{\"value\"" +
                             ":\"г. Санкт-Петербург, Невский пр., д 1/4\",\"cityId\":\"61cb4131-1324-11e4-826b-d850e6bbb0fc\"},\"useppv\":false,\"date\":\"2015-07-07T00:00:00.000Z\",\"startTime" +
                             "\":\"1970-01-01T11:00:00.000Z\",\"endTime\":\"1970-01-01T14:00:00.000Z\",\"floor\":0,\"isFloor\":false,\"work\":false,\"lift\":false,\"terminal\":{\"i" +
-                            "d\":\"d01da881-f94a-11e4-80c7-00155d903d03\"}},\"to\":{\"geo\":{\"latitude\":"+lat2+",\"longitude\":"+long2+"},\"address\":{\"value\":\"г. Москва, " +
+                            "d\":\"d01da881-f94a-11e4-80c7-00155d903d03\"}},\"to\":{\"geo\":{\"latitude\":" + lat2 + ",\"longitude\":" + long2 + "},\"address\":{\"value\":\"г. Москва, " +
                             "Тверская ул., д 1\",\"cityId\":\"544b4290-11ad-11e4-826a-d850e6bbb0fc\"},\"useppv\":false,\"date\":\"2015-07-08T00:00:00.000Z\",\"startTime\":\"1970-01-01T1" +
                             "4:00:00.000Z\",\"endTime\":\"1970-01-01T17:00:00.000Z\",\"floor\":0,\"isFloor\":false,\"work\":false,\"lift\":false,\"terminal\":{\"id\":\"7d6e3103-cd56-11e4-80c0-00155" +
                             "d903d03\"}},\"cargo\":{\"units\":[{\"length\":0.7,\"width\":0.4,\"height\":0.4,\"weight\":0.9,\"amount\":1,\"volume\":0.11199999999999999}],\"packages\":{\"visible\":false,\"" +
                             "bag1\":0,\"bag2\":0,\"sealPackage\":false,\"safePackage\":false,\"box1\":0,\"box2\":0,\"box3\":0,\"box4\":0,\"hardPackage\":false,\"extraPackage\":false,\"bubbleFilm\":false},\"" +
-                            "correspondence\":false,\"insurance\":false,\"insuranceCost\":0,\"total\":{\"all\":{\"length\":0.7,\"height\":0.4,\"width\":0.4,\"volume\":"+volume+",\"weight\":"+weight+",\"amount\":1,\"dens" +
+                            "correspondence\":false,\"insurance\":false,\"insuranceCost\":0,\"total\":{\"all\":{\"length\":0.7,\"height\":0.4,\"width\":0.4,\"volume\":" + volume + ",\"weight\":" + weight + ",\"amount\":1,\"dens" +
                             "ity\":8.04},\"gab\":{\"length\":0.7,\"height\":0.4,\"width\":0.4,\"volume\":0.11,\"weight\":0.9,\"amount\":1,\"density\":8.04},\"noGab\":{\"length\":0,\"height\":0,\"width\":0,\"v" +
                             "olume\":0,\"weight\":0,\"amount\":0,\"density\":null},\"max\":{\"length\":0.7,\"height\":0.4,\"width\":0.4,\"weight\":0.9}}},\"user\":{\"id\":\"54d9e7be227081aaeb610fec\",\"phoneNum" +
                             "ber\":\"new\",\"phoneApprovedHash\":null,\"type\":\"shipper\",\"shipper\":{\"type\":\"individual\",\"sendCode\":false,\"individual\":{\"fullname\":\"\",\"phoneNumber\":\"\",\"email\":" +
@@ -396,7 +396,7 @@ public class MonitoringDL extends JPanel {
                             ",\"sendCode\":true,\"individual\":{\"fullname\":\"\",\"phoneNumber\":\"\",\"email\":\"\"},\"corporate\":{\"name\":\"\",\"inn\":\"\",\"kpp\":\"\",\"legalAddress\":\"\",\"contactFullname" +
                             "\":\"\",\"phoneNumber\":\"\",\"email\":\"\"}},\"payer\":{\"type\":\"individual\",\"sendCode\":true,\"individual\":{\"fullname\":\"\",\"phoneNumber\":\"\",\"email\":\"\"},\"corporate\":{" +
                             "\"name\":\"\",\"inn\":\"\",\"kpp\":\"\",\"legalAddress\":\"\",\"contactFullname\":\"\",\"phoneNumber\":\"\",\"email\":\"\"}},\"uid\":\"f0ba528b-b116-11e4-80be-e15dd7ce905e\"},\"save\":t" +
-                            "rue}","UTF-8");
+                            "rue}", "UTF-8");
 
 //                String inputLine ;
 //                BufferedReader br = new BufferedReader(new InputStreamReader(paramsVoz.getContent()));
@@ -437,7 +437,7 @@ public class MonitoringDL extends JPanel {
                         }
                     }
                     // now you have the string representation of the HTML requestVoz
-                 //   System.out.println("RESPONSE Vozovoz: " + sbVoz);
+                    //   System.out.println("RESPONSE Vozovoz: " + sbVoz);
                     instreamVoz.close();
 
                     JsonParser parserr = new JsonParser();//response.toString()
@@ -445,19 +445,28 @@ public class MonitoringDL extends JPanel {
                     try {
                         summaVOZ = vozObj.get("cost").toString();
                         summaVOZAction = vozObj.get("actionCost").toString();
-                    } catch (Exception e){throw new Exception(e);}
+                    } catch (Exception e) {
+                        throw new Exception(e);
+                    }
                     JsonArray pItem = vozObj.getAsJsonArray("price");
 
                     try {
                         for (JsonElement user : pItem) {
                             JsonObject userObject = user.getAsJsonObject();
                             // if (userObject.get("ID").getAsString().equals("06"))
-                            switch (userObject.get("ID").getAsString())
-                            {
-                                case "01": priceFromVOZ=String.valueOf(userObject.get("Cost")); break;
-                                case "04": priceTOVOZ=String.valueOf(userObject.get("Cost")); break;
-                                case "06": intercityVOZ=String.valueOf(userObject.get("Cost")); break;
-                                case "10": insuranceResponseVOZ=String.valueOf(userObject.get("Cost")); break;
+                            switch (userObject.get("ID").getAsString()) {
+                                case "01":
+                                    priceFromVOZ = String.valueOf(userObject.get("Cost"));
+                                    break;
+                                case "04":
+                                    priceTOVOZ = String.valueOf(userObject.get("Cost"));
+                                    break;
+                                case "06":
+                                    intercityVOZ = String.valueOf(userObject.get("Cost"));
+                                    break;
+                                case "10":
+                                    insuranceResponseVOZ = String.valueOf(userObject.get("Cost"));
+                                    break;
 
 
                                 //return;
@@ -466,8 +475,6 @@ public class MonitoringDL extends JPanel {
                         }
                     } catch (Exception e) {
                     }
-
-
 
 
                     //Запись рез-тов в таблицу ДЛ+VOZ
@@ -479,7 +486,6 @@ public class MonitoringDL extends JPanel {
                         label16 = new jxl.write.Label(16, i, insuranceResponseVOZ);
                         label17 = new jxl.write.Label(17, i, summaVOZ);
                         label18 = new jxl.write.Label(18, i, summaVOZAction);
-
 
 
                         writableSheet.addCell(label13);
@@ -524,16 +530,14 @@ public class MonitoringDL extends JPanel {
 
         //Create the log first, because the action listeners
         //need to refer to it.
-        input = new JTextArea(1,7);
+        input = new JTextArea(1, 7);
         progressBar = new JProgressBar();
         progressBar.setStringPainted(true);
         progressBar.setMinimum(0);
 
 
-
-
-        log = new JTextArea(5,20);
-        log.setMargin(new Insets(15,15,15,15));
+        log = new JTextArea(5, 20);
+        log.setMargin(new Insets(15, 15, 15, 15));
         log.setEditable(false);
         JScrollPane logScrollPane = new JScrollPane(log);
 
@@ -543,7 +547,7 @@ public class MonitoringDL extends JPanel {
         //Create the open button.  We use the image from the JLF
         //Graphics Repository (but we extracted it from the jar).
         openButton = new JButton("Open a File...");
- //       openButton.addActionListener(this);
+        //       openButton.addActionListener(this);
         //progressBar.addChangeListener();
         //Create the save button.  We use the image from the JLF
         //Graphics Repository (but we extracted it from the jar).
@@ -607,10 +611,8 @@ public class MonitoringDL extends JPanel {
     }
 
 
-
-
     public static void main(String[] args) throws Exception {
-        MonitoringDL s= new MonitoringDL();
+        MonitoringDL s = new MonitoringDL();
         s.sendGet();
 
       /*  SwingUtilities.invokeLater(new Runnable() {
